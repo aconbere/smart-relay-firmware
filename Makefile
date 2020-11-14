@@ -1,19 +1,21 @@
 DEVICE			= attiny85
 CLOCK				= 8000000
-PROGRAMMER	= stk500v1
-PORT				= /dev/tty.usbmodem1421
+PROGRAMMER	= usbtiny
+PORT				= usb
 BAUD				= 19200
 FILENAME		= main
-COMPILE			= avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
+CC					= avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
+CPP					= avr-g++ -std=c++11 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
 BUILD_DIR		= ./out
 
-all: clean build upload
+all: clean build size upload
 
 build:
 	mkdir -p $(BUILD_DIR)
-	$(COMPILE) -c $(FILENAME).c -o $(BUILD_DIR)/$(FILENAME).o
-	$(COMPILE) $(BUILD_DIR)/$(FILENAME).o -o $(BUILD_DIR)/$(FILENAME).elf 
+	$(CPP) -o $(BUILD_DIR)/$(FILENAME).elf $(FILENAME).c
 	avr-objcopy -j .text -j .data -O ihex $(BUILD_DIR)/$(FILENAME).elf $(BUILD_DIR)/$(FILENAME).hex
+
+size:
 	avr-size --format=avr --mcu=$(DEVICE) $(BUILD_DIR)/$(FILENAME).elf
 
 upload:
