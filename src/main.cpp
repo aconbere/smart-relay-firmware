@@ -8,6 +8,7 @@
 #define RELAY_ADDRESS 0x18
 #define RELAY_OFF 0x00
 #define RELAY_ON 0x01
+
 #define ADC_REF_VOLTAGE 3.3
 #define ADC_PRECISION_BITS 10
 #define ADC_PRECISON_MAX pow(2, 10)
