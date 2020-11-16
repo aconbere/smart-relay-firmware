@@ -1,0 +1,17 @@
+## Fuses
+
+Fuses: The board has 3 fuses on it, they can be programmed
+
+https://github.com/tardate/LittleArduinoProjects/blob/master/playground/ATtiny/At8MHz/README.md
+
+"It confirms that E:FF, H:DF, L:62 are factory defaults: 8 MHz internal oscillator with CKDIV8 prescaler: so it is running at 1 MHz."
+
+Set clock to 8mhz
+
+> avrdude -c stk500v1 -p attiny85 -P /dev/cu.usbmodem14521 -b 19200 -U lfuse:w:0xe2:m 
+
+## GPIO
+
+https://www.gadgetronicx.com/attiny85-gpio-input/
+http://www.glennsweeney.com/tutorials/interrupt-driven-analog-conversion-with-an-atmega328p
+https://www.marcelpost.com/wiki/index.php/ATtiny85_ADC

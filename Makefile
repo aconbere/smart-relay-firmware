@@ -3,25 +3,32 @@ CLOCK				= 8000000
 PROGRAMMER	= usbtiny
 PORT				= usb
 BAUD				= 19200
-FILENAME		= main
 CC					= avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
-CPP					= avr-g++ -std=c++11 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
-BUILD_DIR		= ./out
+CPP					= avr-g++ -std=c++11 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections
 
-all: clean build size upload
+.DEFAULT_GOAL := all
 
-build:
-	mkdir -p $(BUILD_DIR)
-	$(CPP) -o $(BUILD_DIR)/$(FILENAME).elf $(FILENAME).c
-	avr-objcopy -j .text -j .data -O ihex $(BUILD_DIR)/$(FILENAME).elf $(BUILD_DIR)/$(FILENAME).hex
+build/main.elf: ./src/main.cpp ./lib/TinyWire/TinyWire.cpp ./lib/TinyWire/TinyWire.h ./lib/TinyWire/twi.cpp ./lib/TinyWire/TinyWire.h
+	$(CPP) -o ./build/main.elf ./src/main.cpp ./lib/TinyWire/TinyWire.cpp ./lib/TinyWire/TinyWire.h ./lib/TinyWire/twi.cpp ./lib/TinyWire/TinyWire.h
 
+build/main.hex: ./build/main.elf
+	avr-objcopy -j .text -j .data -O ihex ./build/main.elf ./build/main.hex
+
+.PHONY: all
+all: build/main.hex size upload
+
+.PHONY: size
 size:
-	avr-size --format=avr --mcu=$(DEVICE) $(BUILD_DIR)/$(FILENAME).elf
+	avr-size --format=avr --mcu=$(DEVICE) build/main.elf
 
+.PHONY: upload
 upload:
-	avrdude -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -b $(BAUD) -U flash:w:$(BUILD_DIR)/$(FILENAME).hex:i 
+	avrdude -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -b $(BAUD) -U flash:w:./build/main.hex:i 
 
+.PHONY: clean
 clean:
-	$(RM) $(BUILD_DIR)/main.o
-	$(RM) $(BUILD_DIR)/main.elf
-	$(RM) $(BUILD_DIR)/main.hex
+	$(RM) ./build/*
+
+.PHONY: setclock
+setclock:
+	avrdude -p $(DEVICE) -c $(PROGRAMMER) -P $(PORT) -b $(BAUD) -U lfuse:w:0xe2:m
