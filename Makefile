@@ -4,12 +4,12 @@ PROGRAMMER	= usbtiny
 PORT				= usb
 BAUD				= 19200
 CC					= avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib
-CPP					= avr-g++ -std=c++11 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections
+CPP					= avr-g++ -std=c++11 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -Ilib -fno-exceptions -ffunction-sections -fdata-sections -Wl,--gc-sections
 
 .DEFAULT_GOAL := all
 
-build/main.elf: ./src/main.cpp ./lib/TinyWire/TinyWire.cpp ./lib/TinyWire/TinyWire.h ./lib/TinyWire/twi.cpp ./lib/TinyWire/TinyWire.h
-	$(CPP) -o ./build/main.elf ./src/main.cpp ./lib/TinyWire/TinyWire.cpp ./lib/TinyWire/TinyWire.h ./lib/TinyWire/twi.cpp ./lib/TinyWire/TinyWire.h
+build/main.elf: ./src/main.cpp ./lib/twi/twi.cpp ./lib/twi/twi.h
+	$(CPP) -o ./build/main.elf ./src/main.cpp ./lib/twi/twi.cpp
 
 build/main.hex: ./build/main.elf
 	avr-objcopy -j .text -j .data -O ihex ./build/main.elf ./build/main.hex

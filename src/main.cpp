@@ -3,7 +3,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include <TinyWire/TinyWire.h>
+#include <twi/twi.h>
 
 #define RELAY_ADDRESS 0x18
 #define RELAY_OFF 0x00
@@ -13,10 +13,12 @@
 #define ADC_PRECISION_BITS 10
 #define ADC_PRECISON_MAX pow(2, 10)
 
+Twi *TW;
+
 void set_relay(uint8_t state) {
-  TinyWire.beginTransmission(0x18);
-  TinyWire.send(state);
-  TinyWire.endTransmission();
+  TW->start(0x18);
+  TW->write(state);
+  TW->stop();
 }
 
 void adc_config() {
@@ -31,6 +33,7 @@ void adc_config() {
    *
    * Selecting ADC4 will select a temperature sensor
    */
+  sei();
   ADMUX = (0 << ADLAR) | // right shift result
           (0 << REFS1) | // Sets ref. voltage to VCC, bit 1
           (0 << REFS0) | // Sets ref. voltage to VCC, bit 0
@@ -72,14 +75,11 @@ ISR(ADC_vect) {
 
 int main(void) {
   adc_config();
-  TinyWire.begin();
+  TW->init();
 
   while (true) {
-    adc_start_conversion();
-    // set_relay(RELAY_ON);
-    // _delay_ms(1000);
-    // set_relay(RELAY_OFF);
     _delay_ms(1000);
+    adc_start_conversion();
   }
 
   return 1;
