@@ -16,7 +16,7 @@
 Twi *TW;
 
 void set_relay(uint8_t state) {
-  TW->start(0x18);
+  TW->start(0x18, false);
   TW->write(state);
   TW->stop();
 }

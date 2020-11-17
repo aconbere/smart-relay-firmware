@@ -22,7 +22,7 @@ public:
   void init(void);
   uint8_t read(void);
   bool write(uint8_t data);
-  bool start(uint8_t address);
+  bool start(uint8_t address, bool read);
   void stop(void);
 
 private:

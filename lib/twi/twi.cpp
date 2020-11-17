@@ -22,23 +22,23 @@
 #define PIN_USI_SDA PINB0
 #define PIN_USI_SCL PINB2
 
-#define PIN_USI PINB
-#define PIN_USI_CL PINB
+#define DD_USI_SDA DDB0
+#define DD_USI_SCL DDB2
 
 Twi::Twi() {}
 
 void Twi::init() {
   // Enable pullup on SDA.
-  PORTB |= 1 << PIN_USI_SDA;
+  PORTB |= 1 << PORT_USI_SDA;
 
   // Enable pullup on SCL.
-  PORTB |= 1 << PIN_USI_SCL;
+  PORTB |= 1 << PORT_USI_SCL;
 
   // Enable SDA as output.
-  DDRB |= 1 << PIN_USI_SDA;
+  DDRB |= 1 << DD_USI_SDA;
 
   // Enable SCL as output.
-  DDRB |= 1 << PIN_USI_SCL;
+  DDRB |= 1 << DD_USI_SCL;
 
   // Preload data register with "released level" data.
   USIDR = 0xFF;
@@ -54,32 +54,34 @@ void Twi::init() {
 }
 
 // Start transmission by sending address
-bool Twi::start (uint8_t address) {
-  uint8_t readcount = 0;
+bool Twi::start (uint8_t address, bool read) {
+  uint8_t addressRW = address << 1;
 
-  uint8_t addressRW = address << 1 | readcount;
+  if (read) {
+    addressRW |= 0x01;
+  }
 
   /* Release SCL to ensure that (repeated) Start can be performed */
-  PORTB |= 1 << PIN_USI_SCL;              // Release SCL.
+  PORTB |= 1 << PORT_USI_SCL;
 
   // Verify that SCL becomes high.
-  while (!(PIN_USI_CL & 1 << PIN_USI_SCL)) {
+  while (!(PINB & 1 << PIN_USI_SCL)) {
     _delay_us(DELAY_T4TWI);
   }
 
   /* Generate Start Condition */
-  PORTB &= ~(1 << PIN_USI_SDA); // Force SDA LOW.
+  PORTB &= ~(1 << PORT_USI_SDA); // Force SDA LOW.
   _delay_us(DELAY_T4TWI);
 
-  PORTB &= ~(1 << PIN_USI_SCL); // Pull SCL LOW.
-  PORTB |= 1 << PIN_USI_SDA; // Release SDA.
+  PORTB &= ~(1 << PORT_USI_SCL); // Pull SCL LOW.
+  PORTB |= 1 << PORT_USI_SDA; // Release SDA.
 
   if (!(USISR & 1 << USISIF)) {
     return false;
   }
 
   /*Write address */
-  PORTB &= ~(1 << PIN_USI_SCL); // Pull SCL LOW.
+  PORTB &= ~(1 << PORT_USI_SCL); // Pull SCL LOW.
 
   // Setup data.
   USIDR = addressRW;
@@ -88,7 +90,7 @@ bool Twi::start (uint8_t address) {
   this->transfer(USISR_8bit);
 
   /* Clock and verify (N)ACK from slave */
-  DDRB &= ~(1 << PIN_USI_SDA); // Enable SDA as input.
+  DDRB &= ~(1 << DD_USI_SDA); // Enable SDA as input.
   if (this->transfer(USISR_1bit) & 1 << TWI_NACK_BIT) {
     // No ACK
     return false;
@@ -100,7 +102,7 @@ bool Twi::start (uint8_t address) {
 
 uint8_t Twi::read() {
   // Read a byte
-  DDRB &= ~(1 << PIN_USI_SDA); // Enable SDA as input.
+  DDRB &= ~(1 << DD_USI_SDA); // Enable SDA as input.
   uint8_t data = this->transfer(USISR_8bit);
 
   // Prepare to generate ACK (or NACK in case of End Of Transmission)
@@ -114,12 +116,12 @@ uint8_t Twi::read() {
 
 bool Twi::write(uint8_t data) {
   // Write a byte 
-  PORTB &= ~(1 << PIN_USI_SCL); // Pull SCL LOW.
+  PORTB &= ~(1 << PORT_USI_SCL); // Pull SCL LOW.
   USIDR = data; // Setup data.
   this->transfer(USISR_8bit); // Send 8 bits on bus.
 
   /* Clock and verify (N)ACK from slave */
-  DDRB &= ~(1 << PIN_USI_SDA); // Enable SDA as input.
+  DDRB &= ~(1 << DD_USI_SDA); // Enable SDA as input.
 
   if (this->transfer(USISR_1bit) & 1 << TWI_NACK_BIT) {
     return false;
@@ -144,7 +146,7 @@ uint8_t Twi::transfer(uint8_t status) {
     USICR = status;
 
     // Wait for SCL to go high.
-    while (!(PIN_USI_CL & 1 << PIN_USI_SCL)) {
+    while (!(PINB & 1 << PIN_USI_SCL)) {
       _delay_us(DELAY_T4TWI);
     }
 
@@ -161,7 +163,7 @@ uint8_t Twi::transfer(uint8_t status) {
   USIDR = 0xFF;
 
   // Enable SDA as output.
-  DDRB |= (1 << PIN_USI_SDA);
+  DDRB |= (1 << DD_USI_SDA);
 
   // Return the data from the USIDR
   return status;
@@ -169,17 +171,17 @@ uint8_t Twi::transfer(uint8_t status) {
 
 void Twi::stop (void) {
   // Pull SDA low.
-  PORTB &= ~(1 << PIN_USI_SDA);
+  PORTB &= ~(1 << PORT_USI_SDA);
 
   // Release SCL.
-  PORTB |= 1 << PIN_USI_SCL;
+  PORTB |= 1 << PORT_USI_SCL;
 
   // Wait for SCL to go high.
-  while (!(PIN_USI_CL & 1 << PIN_USI_SCL)) {
+  while (!(PINB & 1 << PIN_USI_SCL)) {
     _delay_us(DELAY_T4TWI);
   }
 
   // Release SDA.
-  PORTB |= 1 << PIN_USI_SDA;
+  PORTB |= 1 << PORT_USI_SDA;
   _delay_us(DELAY_T2TWI);
 }
