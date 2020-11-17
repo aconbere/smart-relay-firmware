@@ -71,10 +71,14 @@ ISR(ADC_vect) {
 }
 
 int main(void) {
+  adc_config();
   TinyWire.begin();
 
   while (true) {
     adc_start_conversion();
+    // set_relay(RELAY_ON);
+    // _delay_ms(1000);
+    // set_relay(RELAY_OFF);
     _delay_ms(1000);
   }
 
