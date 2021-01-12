@@ -11,6 +11,9 @@ There are 5 I/O Pins comprising a 6 bit bidirectional I/O port
 - or PortB 0-5
 
 
+# Running in the simulator
 
+
+> ./simavr/run_avr -m attiny85 -f 8000000 -g ~/Projects/attiny85-example/build/main.hex
 
 

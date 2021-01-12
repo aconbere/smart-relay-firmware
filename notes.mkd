@@ -15,3 +15,28 @@ Set clock to 8mhz
 https://www.gadgetronicx.com/attiny85-gpio-input/
 http://www.glennsweeney.com/tutorials/interrupt-driven-analog-conversion-with-an-atmega328p
 https://www.marcelpost.com/wiki/index.php/ATtiny85_ADC
+
+## Set pin as output
+
+Set pin 3 to output
+
+> DDRB |= (1 << DDB3)
+
+Set pin 3 high
+
+> PORTB |= (1 << PB3)
+
+Set pin 3 low
+
+> PORTB &= ~(1 << PB3)
+
+Toggle pin 3
+
+> PORTB ^= (1 << PB3)
+
+## Headers
+
+Look at
+
+* /usr/lib/avr/include/avr/io.h
+* /usr/lib/avr/include/avr/iotnx5.h
